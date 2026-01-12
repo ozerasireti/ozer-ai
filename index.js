@@ -1,6 +1,33 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+const path = require("path");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// 🔴 BU SATIR ÇOK ÖNEMLİ
+app.use(express.static("public"));
+
+// 🔴 ANA SAYFA
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// CHAT
+app.post("/chat", async (req, res) => {
+  const { bot, mesaj } = req.body;
+  res.json({ reply: `${bot} dedi ki: ${mesaj}` });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("API çalışıyor");
+});
 
 const app = express();
 app.use(cors());
