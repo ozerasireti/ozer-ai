@@ -1,69 +1,61 @@
-const cors = require("cors");
+import express from "express";
+import fetch from "node-fetch";
+import cors from "cors";
+
+const app = express();
 app.use(cors());
 app.use(express.json());
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<title>ÖZER DİVANI</title>
-<style>
-body { margin:0;font-family:Arial;background:#0a192f;color:#fff }
-#chatbox{height:80vh;overflow:auto;padding:15px}
-.msg{margin:8px 0;padding:10px;border-radius:10px}
-.lider{background:#fff3c4;color:#000}
-.bot{background:#e0e0e0;color:#000}
-input,button{padding:10px;font-size:16px}
-</style>
-</head>
-<body>
 
-<h2 style="text-align:center">ÖZER DİVANI</h2>
+app.get("/", (req, res) => {
+  res.send("API çalışıyor");
+});
 
-<div id="chatbox"></div>
+app.post("/chat", async (req, res) => {
+  const { bot, mesaj } = req.body;
 
-<input id="mesaj" placeholder="Mesaj yaz (örn: Hacı Abdullah nasihat ver)">
-<button onclick="gonder()">Gönder</button>
+  if (!bot || !mesaj) {
+    return res.json({ reply: "Eksik veri" });
+  }
 
-<script>
-const API_URL = "https://ozer-ai.onrender.com/chat";
+  const profil = {
+    "Kerem Özer": "Genç, net konuşur.",
+    "Faruk Özer": "Olgun, sakin.",
+    "Ahmet Özer": "Pratik zekalı.",
+    "Ali Özer": "Sadık ve açık sözlü.",
+    "Mahmut Enes Demiroğlu": "Ağırbaşlı.",
+    "Mervan Cengiz": "Genç ve saygılı.",
+    "Hacı Remzi Özer": "Tecrübeli.",
+    "Hacı Abdullah Özer": "Eski reis. Çok dindar, nasihat eder."
+  };
 
-const bots = [
-  "Kerem Özer",
-  "Faruk Özer",
-  "Ahmet Özer",
-  "Ali Özer",
-  "Mahmut Enes Demiroğlu",
-  "Mervan Cengiz",
-  "Hacı Remzi Özer",
-  "Hacı Abdullah Özer"
-];
+  const sys = `
+Sen ${bot}'sun.
+${profil[bot] || ""}
+Liderin Said Özer’dir.
+Aşiret adabına uygun, kısa ve saygılı cevap ver.
+`;
 
-function ekle(isim, mesaj, sinif){
-  const d=document.createElement("div");
-  d.className="msg "+sinif;
-  d.innerHTML="<b>"+isim+":</b> "+mesaj;
-  document.getElementById("chatbox").appendChild(d);
-}
+  try {
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: mesaj }
+        ]
+      })
+    });
 
-async function gonder(){
-  const m=document.getElementById("mesaj").value.trim();
-  if(!m) return;
-  document.getElementById("mesaj").value="";
-  ekle("Said Özer",m,"lider");
+    const j = await r.json();
+    res.json({ reply: j.choices?.[0]?.message?.content || "Cevap yok" });
+  } catch (e) {
+    res.json({ reply: "Sunucu hatası" });
+  }
+});
 
-  const bot = bots.find(b=>m.toLowerCase().includes(b.toLowerCase().split(" ")[0]));
-  if(!bot) return;
-
-  const r = await fetch(API_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ bot:bot, mesaj:m })
-  });
-
-  const j = await r.json();
-  ekle(bot,j.reply || "...","bot");
-}
-</script>
-
-</body>
-</html>
+app.listen(3000, () => console.log("API çalışıyor"));
