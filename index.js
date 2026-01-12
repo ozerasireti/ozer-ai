@@ -1,6 +1,32 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+/* ANA SAYFA */
+app.get("/", (req, res) => {
+  res.send("OZER-AI API ÇALIŞIYOR");
+});
+
+/* CHAT */
+app.post("/chat", async (req, res) => {
+  const { bot, mesaj } = req.body;
+
+  res.json({
+    reply: `${bot} dedi ki: ${mesaj}`
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server ayakta: " + PORT);
+});
 
 const app = express();
 app.use(cors());
