@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Özer Divanı – Ozer AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: rgba(0,0,0,0.6);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.7);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    p {
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    select, textarea, button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+    }
+
+    textarea {
+      resize: none;
+      height: 90px;
+    }
+
+    button {
+      background: #1abc9c;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #16a085;
+    }
+
+    .reply {
+      margin-top: 15px;
+      background: rgba(255,255,255,0.1);
+      padding: 10px;
+      border-radius: 6px;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1>Özer Divanı</h1>
+    <p>Ozer AI – Aşiret Sohbet Sistemi</p>
+
+    <select id="bot">
+      <option>Kerem Özer</option>
+      <option>Faruk Özer</option>
+      <option>Ahmet Özer</option>
+      <option>Ali Özer</option>
+      <option>Mahmut Enes Demiroğlu</option>
+      <option>Mervan Cengiz</option>
+      <option>Hacı Remzi Özer</option>
+      <option>Hacı Abdullah Özer</option>
+    </select>
+
+    <textarea id="mesaj" placeholder="Sorunu yaz..."></textarea>
+
+    <button onclick="gonder()">Sor</button>
+
+    <div class="reply" id="cevap">Cevap burada görünecek…</div>
+  </div>
+
+<script>
+async function gonder() {
+  const bot = document.getElementById("bot").value;
+  const mesaj = document.getElementById("mesaj").value;
+  const cevap = document.getElementById("cevap");
+
+  cevap.innerText = "Yazıyor...";
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bot, mesaj })
+    });
+
+    const data = await res.json();
+    cevap.innerText = data.reply;
+  } catch (e) {
+    cevap.innerText = "Bağlantı hatası!";
+  }
+}
+</script>
+
+</body>
+</html>
