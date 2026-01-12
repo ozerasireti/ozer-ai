@@ -1,3 +1,6 @@
+const cors = require("cors");
+app.use(cors());
+app.use(express.json());
 <!DOCTYPE html>
 <html lang="tr">
 <head>
