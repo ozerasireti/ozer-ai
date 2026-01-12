@@ -1,53 +1,66 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>ÖZER DİVANI</title>
+<style>
+body { margin:0;font-family:Arial;background:#0a192f;color:#fff }
+#chatbox{height:80vh;overflow:auto;padding:15px}
+.msg{margin:8px 0;padding:10px;border-radius:10px}
+.lider{background:#fff3c4;color:#000}
+.bot{background:#e0e0e0;color:#000}
+input,button{padding:10px;font-size:16px}
+</style>
+</head>
+<body>
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+<h2 style="text-align:center">ÖZER DİVANI</h2>
 
-const PROFIL = {
-  "Kerem Özer":"Genç, zeki, net konuşur.",
-  "Faruk Özer":"Olgun, sakin.",
-  "Ahmet Özer":"Pratik zekalı.",
-  "Ali Özer":"Sadık, açık sözlü.",
-  "Mahmut Enes Demiroğlu":"Ağırbaşlı, düşünceli.",
-  "Mervan Cengiz":"Genç ve saygılı.",
-  "Hacı Remzi Özer":"Tecrübeli, temkinli.",
-  "Hacı Abdullah Özer":"ESKİ REİS. Çok dindar, nasihat eder, hikmetli konuşur."
-};
+<div id="chatbox"></div>
 
-app.post("/api", async (req, res) => {
-  const { bot, mesaj } = req.body;
+<input id="mesaj" placeholder="Mesaj yaz (örn: Hacı Abdullah nasihat ver)">
+<button onclick="gonder()">Gönder</button>
 
-  const system = `
-Sen ${bot}'sun.
-${PROFIL[bot] || ""}
-Liderin Said Özer’dir.
-Aşiret adabına uygun, kısa ve saygılı cevap ver.
-`;
+<script>
+const API_URL = "https://ozer-ai.onrender.com/chat";
 
-  try {
-    const r = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: mesaj }
-        ]
-      })
-    });
+const bots = [
+  "Kerem Özer",
+  "Faruk Özer",
+  "Ahmet Özer",
+  "Ali Özer",
+  "Mahmut Enes Demiroğlu",
+  "Mervan Cengiz",
+  "Hacı Remzi Özer",
+  "Hacı Abdullah Özer"
+];
 
-    const j = await r.json();
-    res.json({ reply: j.choices?.[0]?.message?.content || "..." });
-  } catch (e) {
-    res.json({ reply: "Şu an cevap veremiyorum." });
-  }
-});
+function ekle(isim, mesaj, sinif){
+  const d=document.createElement("div");
+  d.className="msg "+sinif;
+  d.innerHTML="<b>"+isim+":</b> "+mesaj;
+  document.getElementById("chatbox").appendChild(d);
+}
 
-app.listen(3000, () => console.log("API çalışıyor"));
+async function gonder(){
+  const m=document.getElementById("mesaj").value.trim();
+  if(!m) return;
+  document.getElementById("mesaj").value="";
+  ekle("Said Özer",m,"lider");
+
+  const bot = bots.find(b=>m.toLowerCase().includes(b.toLowerCase().split(" ")[0]));
+  if(!bot) return;
+
+  const r = await fetch(API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ bot:bot, mesaj:m })
+  });
+
+  const j = await r.json();
+  ekle(bot,j.reply || "...","bot");
+}
+</script>
+
+</body>
+</html>
